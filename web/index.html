@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Convert, resize and compare images privately, right in your browser.">
+<meta name="color-scheme" content="light">
+<title>FILE Studio — Image converter</title>
+<link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="studio.css">
+<script defer src="assets/fflate.js"></script>
+<script defer src="studio.js"></script>
+</head>
+<body>
+<header class="top wrap">
+  <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="29" height="29">FILE <span>Studio</span></a>
+  <span class="local"><i aria-hidden="true"></i> On device</span>
+</header>
+<main class="sheet wrap">
+  <header class="intro">
+    <div><h1>Image converter</h1><p>Convert, resize and compare images directly in your browser.</p></div>
+    <button id="samples" type="button" class="subtle"><span data-icon="stack"></span> Load sample images</button>
+  </header>
+  <div class="workbench">
+    <div class="controls">
+      <section class="drop" id="drop" aria-label="Add images">
+        <div class="drop-copy">
+          <h2>Add images</h2>
+          <p id="file-limits">PNG, JPG, WebP, AVIF or BMP<br>Up to 20 images · 30 MB per image</p>
+        </div>
+        <button id="browse" type="button" class="subtle" aria-describedby="file-limits"><span data-icon="plus"></span> Browse files</button>
+        <input type="file" id="files" accept=".png,.jpg,.jpeg,.webp,.avif,.bmp,image/png,image/jpeg,image/webp,image/avif,image/bmp" multiple hidden>
+      </section>
+      <section class="panel settings" aria-labelledby="output-title">
+        <header><h2 id="output-title">Output settings</h2></header>
+        <fieldset id="options">
+          <legend>File format</legend>
+          <div class="segments">
+            <label><input type="radio" name="format" value="webp" checked><span>WebP</span></label>
+            <label><input type="radio" name="format" value="jpg"><span>JPG</span></label>
+            <label><input type="radio" name="format" value="png"><span>PNG</span></label>
+          </div>
+          <div class="field" id="quality-field">
+            <label for="quality">Quality <output id="quality-value" for="quality">82%</output></label>
+            <input type="range" id="quality" min="1" max="100" value="82">
+          </div>
+          <div class="field">
+            <label for="resize">Longest side</label>
+            <select id="resize"><option value="0">Original size (up to 4096 px)</option><option value="2560">Up to 2560 px</option><option value="1600">Up to 1600 px</option><option value="1080">Up to 1080 px</option><option value="720">Up to 720 px</option></select>
+          </div>
+        </fieldset>
+        <button type="button" class="primary" id="convert" disabled><span data-icon="arrows"></span> <span id="convert-label">Convert images</span></button>
+        <p id="settings-note" class="settings-note" role="status" hidden>Downloads reflect your last conversion. Convert again to apply these settings.</p>
+      </section>
+    </div>
+      <section class="panel preview" id="preview" aria-labelledby="preview-title">
+        <header class="section-heading">
+          <div><h2 id="preview-title">Image preview</h2><p id="preview-name">Select an image in the queue</p></div>
+          <div class="preview-toggle" role="group" aria-label="Preview version">
+            <button id="before" type="button" aria-pressed="true" disabled>Original</button>
+            <button id="after" type="button" aria-pressed="false" disabled>Output</button>
+            <button id="compare" type="button" aria-pressed="false" hidden>Compare</button>
+          </div>
+        </header>
+        <div class="proof">
+          <div id="comparison" class="comparison" hidden>
+            <div class="compare-line" aria-hidden="true"></div>
+          </div>
+          <span id="preview-empty">Add an image to see it here.</span>
+        </div>
+        <div class="compare-control" id="compare-control" hidden>
+          <span aria-hidden="true">Original</span>
+          <input type="range" id="compare-range" min="0" max="100" value="50" aria-label="Image comparison, percentage of original shown" aria-controls="comparison">
+          <span aria-hidden="true">Output</span>
+        </div>
+        <footer class="preview-footer"><span id="preview-size">—</span><span id="preview-delta"></span></footer>
+      </section>
+      <section class="panel queue" aria-labelledby="queue-title">
+        <header class="section-heading">
+          <div><h2 id="queue-title">Conversion queue</h2><p id="queue-meta">No images added</p></div>
+          <div class="queue-actions">
+            <button type="button" id="clear" class="text-button">Clear queue</button>
+            <button id="zip" type="button" class="subtle" disabled><span data-icon="download"></span> Download ZIP</button>
+          </div>
+        </header>
+        <div id="queue-rows"></div>
+        <footer class="queue-footer"><span id="queue-summary" aria-live="polite">Results will appear here</span></footer>
+        <p class="notice" id="notice" role="status"></p>
+      </section>
+  </div>
+</main>
+<footer class="site-footer wrap"><span><span data-icon="lock"></span> Your files stay on this device.</span><span class="site-credits"><a href="https://github.com/itaycohen5/File-Studio">Desktop project</a><span aria-hidden="true">·</span><a href="https://github.com/KnifeLemon/Filee" target="_blank" rel="noopener">Based on Filee <span data-icon="external"></span></a><span aria-hidden="true">·</span><a href="LICENSE-Filee.txt" target="_blank" rel="noopener">MIT license</a></span></footer>
+</body>
+</html>
