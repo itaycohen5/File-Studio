@@ -399,6 +399,9 @@ public class BrowserDropTests
         window.Show();
         Pump();
         var radial = AppHost.Get<RadialController>();
+        var settings = AppHost.Get<UserDataStore>().Settings;
+        var collect = settings.CollectDroppedFiles;
+        settings.CollectDroppedFiles = false;
         try
         {
             var page = window.GetVisualDescendants().OfType<HomePage>().Single();
@@ -421,6 +424,7 @@ public class BrowserDropTests
         }
         finally
         {
+            settings.CollectDroppedFiles = collect;
             radial.Close(animate: false);
             window.Close();
         }

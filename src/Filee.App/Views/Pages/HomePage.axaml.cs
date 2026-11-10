@@ -1,9 +1,4 @@
-// Drop zone: files dropped on the Home page join the queue below it, and so do the files a double-click picks. The
-// queue's button opens the donut (click mode) at itself for the queued files, in the order shown. Pictures, links and
-// downloads dragged from a browser open the donut at the drop position, as before, or join the queue when Settings asks
-// for it (saved to the download folder first). A card dragged to another
-// place in the queue changes the order the files are converted or merged in. A click selects a card, and the Delete key
-// takes the selected file out of the queue.
+// The workspace stages input files and sends a batch to the conversion queue.
 
 using System.Globalization;
 using Avalonia;
@@ -15,6 +10,11 @@ using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using Filee.App.Services;
 using Filee.App.ViewModels.Pages;
+using Filee.Core.Conversion;
+using Filee.Core.Formats;
+using Filee.Core.Localization;
+using Filee.Core.Platform;
+using Filee.Core.Presets;
 using Filee.Core.Settings;
 using Filee.Core.Web;
 using Microsoft.Extensions.Logging;
@@ -41,7 +41,6 @@ public partial class HomePage : UserControl
     public HomePage()
     {
         InitializeComponent();
-        DropZone.DoubleTapped += OnDropZoneDoubleTapped;
         DragDrop.AddDragEnterHandler(DropZone, (_, e) =>
         {
             DropZone.Classes.Add("over");
@@ -71,9 +70,8 @@ public partial class HomePage : UserControl
     private static void OfferDrop(object? sender, DragEventArgs e) =>
         e.DragEffects = DraggedFiles.Offered(e.DataTransfer) ? DragDropEffects.Copy : DragDropEffects.None;
 
-    private async void OnDropZoneDoubleTapped(object? sender, TappedEventArgs e)
+    private async void OnBrowseFiles(object? sender, RoutedEventArgs e)
     {
-        e.Handled = true;
         if (TopLevel.GetTopLevel(this) is not { } top)
             return;
 
@@ -88,7 +86,7 @@ public partial class HomePage : UserControl
         if (paths.Count == 0)
             return;
 
-        TakeFiles(paths, DropZone.TranslatePoint(new Point(DropZone.Bounds.Width / 2, DropZone.Bounds.Height / 2), this) ?? new Point());
+        ViewModel?.AddToQueue(paths);
     }
 
     private void OnDrop(object? sender, DragEventArgs e)
@@ -102,33 +100,52 @@ public partial class HomePage : UserControl
         }
 
         e.DragEffects = DragDropEffects.Copy;
-        if (dragged.Web is null)
+        if (sender == DropZone && !AppHost.Get<UserDataStore>().Settings.CollectDroppedFiles)
         {
-            TakeFiles(dragged.Files, e.GetPosition(this));
-            return;
+            var point = this.PointToScreen(e.GetPosition(this));
+            AppHost.Get<RadialController>().ShowForFiles(point.X, point.Y, dragged.Files, web: dragged.Web);
         }
-        if (AppHost.Get<UserDataStore>().Settings.CollectDroppedFiles)
-        {
-            _ = AddBrowserFilesAsync(dragged.Web);
-            return;
-        }
-        var screenPoint = this.PointToScreen(e.GetPosition(this));
-        AppHost.Get<RadialController>().ShowForFiles(screenPoint.X, screenPoint.Y, dragged.Files, web: dragged.Web);
+        else if (dragged.Web is { } web)
+            _ = AddBrowserFilesAsync(web);
+        else
+            ViewModel?.AddToQueue(dragged.Files);
     }
 
-    /// <summary>
-    /// Files dropped or picked: they join the list when the setting asks for it; otherwise the donut opens for them at the
-    /// point, as before the list existed.
-    /// </summary>
-    private void TakeFiles(IReadOnlyList<string> paths, Point at)
+    private async void OnChooseFormat(object? sender, RoutedEventArgs e)
     {
-        if (AppHost.Get<UserDataStore>().Settings.CollectDroppedFiles)
-        {
-            ViewModel?.AddToQueue(paths);
+        if (ViewModel is not { HasQueue: true } vm || TopLevel.GetTopLevel(this) is not Window owner)
             return;
+
+        ChooseFormatButton.IsEnabled = false;
+        var paths = vm.QueuedPaths;
+        var loc = AppHost.Get<ILocalizer>();
+        var catalog = AppHost.Get<ConverterCatalog>();
+        try
+        {
+            var formats = await Task.Run(() => StudioFormatWindow.TargetsFor(paths, catalog));
+            if (await new StudioFormatWindow(formats, paths.Count, loc).ShowDialog<FileFormat?>(owner) is not { } format)
+                return;
+
+            // A preceding job can remove its files while the chooser is open.
+            var stillQueued = vm.QueuedPaths.ToHashSet(FileSystemPaths.Comparer);
+            var batch = paths.Where(path => stillQueued.Contains(path) && File.Exists(path)).ToArray();
+            if (batch.Length == 0)
+                return;
+
+            var preset = new Preset { Name = format.DisplayName, TargetFormat = format.Id };
+            var job = AppHost.Get<ConversionService>().Start(batch, preset);
+            if (job is not null)
+                AppHost.Get<StagedFiles>().TrackWorkspaceJob(job.Job, batch);
         }
-        var screenPoint = this.PointToScreen(at);
-        AppHost.Get<RadialController>().ShowForFiles(screenPoint.X, screenPoint.Y, paths);
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            AppHost.Get<ILogger<HomePage>>().LogError(ex, "Could not start a workspace conversion");
+            await new StudioFormatWindow([], paths.Count, loc, loc["studio.error"]).ShowDialog<FileFormat?>(owner);
+        }
+        finally
+        {
+            ChooseFormatButton.IsEnabled = true;
+        }
     }
 
     /// <summary>

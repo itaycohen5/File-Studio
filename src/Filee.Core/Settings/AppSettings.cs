@@ -40,7 +40,7 @@ public sealed class ThemeSettings
     public ThemeMode Mode { get; set; } = ThemeMode.System;
 
     /// <summary>Accent colour as <c>#RRGGBB</c>.</summary>
-    public string Accent { get; set; } = "#7F77DD";
+    public string Accent { get; set; } = "#008579";
 
     /// <summary>Active curated preset key (e.g. "mint", "peach") when a coordinated light/dark pair is used; null for custom choices.</summary>
     public string? PresetKey { get; set; }
@@ -144,7 +144,7 @@ public sealed class AppSettings
     /// <summary>Show the Explorer "Convert with Filee" context menu entry.</summary>
     public bool ContextMenuEnabled { get; set; } = true;
 
-    public bool CheckForUpdates { get; set; } = true;
+    public bool CheckForUpdates { get; set; } = false;
 
     /// <summary>What closing the main window does. A value from a newer Filee reads as <see cref="CloseAction.Ask"/>.</summary>
     [JsonConverter(typeof(LenientEnumJsonConverter<CloseAction>))]
@@ -267,7 +267,7 @@ public sealed class AppSettings
     /// <summary>
     /// Files dropped or picked on the Home page wait in its list (<c>true</c>), instead of opening the donut for each drop.
     /// </summary>
-    public bool CollectDroppedFiles { get; set; } = false;
+    public bool CollectDroppedFiles { get; set; } = true;
 
     /// <summary>Every geospatial conversion is saved as a ZIP, whatever the preset says (see <see cref="OutputRule.ZipResult"/>).</summary>
     public bool ZipGeoResults { get; set; }

@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:formats="using:Filee.Core.Formats"
+        x:Class="Filee.App.Views.StudioFormatWindow"
+        Title="{DynamicResource studio.picker_title}"
+        Width="490" Height="530" MinWidth="380" MinHeight="390"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+  <Grid Margin="24" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="h1" Text="{DynamicResource studio.picker_title}" TextWrapping="Wrap" />
+      <TextBlock x:Name="BatchSummary" Classes="muted" TextWrapping="Wrap" />
+    </StackPanel>
+    <TextBox Grid.Row="1" x:Name="FormatSearch" Classes="search"
+             PlaceholderText="{DynamicResource studio.picker_search}"
+             AutomationProperties.Name="{DynamicResource studio.picker_search}" />
+    <Panel Grid.Row="2">
+      <ListBox x:Name="FormatResults" AutomationProperties.Name="{DynamicResource studio.picker_title}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="formats:FileFormat">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="2,5">
+              <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+              <TextBlock Grid.Column="1" Classes="caption" Text="{Binding PrimaryExtension, StringFormat='.{0}'}" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <TextBlock x:Name="EmptyState" Classes="muted" Margin="10" TextWrapping="Wrap" />
+    </Panel>
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="{DynamicResource common.cancel}" IsCancel="True" Click="OnCancel" />
+      <Button x:Name="ConvertBatch" Classes="accent" Content="{DynamicResource studio.convert}"
+              IsDefault="True" Click="OnConvert" />
+    </StackPanel>
+  </Grid>
+</Window>

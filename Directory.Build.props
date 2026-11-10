@@ -15,12 +15,12 @@
     <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 
     <Version>2.4.0</Version>
-    <Product>Filee</Product>
-    <Authors>Filee contributors</Authors>
+    <Product>FILE Studio</Product>
+    <Authors>Itay Cohen;Filee contributors</Authors>
     <Copyright>Copyright (c) Filee contributors</Copyright>
 
     <!-- Single source of truth for the GitHub repository (used by the updater and the About page). -->
-    <FileeRepositoryUrl>https://github.com/KnifeLemon/Filee</FileeRepositoryUrl>
+    <FileeRepositoryUrl>https://github.com/itaycohen5/File-Studio</FileeRepositoryUrl>
     <RepositoryUrl>$(FileeRepositoryUrl)</RepositoryUrl>
 
     <!-- What an official build (-p:FileeRelease=true) checks before it installs an update (UpdateService).

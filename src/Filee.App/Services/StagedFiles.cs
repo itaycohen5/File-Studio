@@ -93,6 +93,14 @@ public sealed partial class StagedFiles : ObservableObject, IDisposable
         _sent = [];
     }
 
+    /// <summary>Tracks only the cards submitted by the workspace's format chooser.</summary>
+    public void TrackWorkspaceJob(ConversionJob job, IReadOnlyList<string> paths)
+    {
+        var submitted = paths.ToHashSet(FileSystemPaths.Comparer);
+        _startedJobs[job.Id] = Cards.Where(card => submitted.Contains(card.Path)).ToList();
+        Error = "";
+    }
+
     /// <summary>The place of each card follows the list.</summary>
     private void Renumber()
     {
